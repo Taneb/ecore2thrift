@@ -1,0 +1,147 @@
+[%
+operation EModelElement getOptional() : String {
+	if (self.getAnnotationValue("doc", "optional") == "true") {
+		return " (optional)";
+	}
+	return "";
+}
+
+operation EOperation getAuth() : String {
+	if (self.getAnnotationValue("doc", "auth") == "false") {
+		return "No";
+	}
+	return "Yes";
+}
+
+operation EOperation getStream() : String {
+	if (self.isStream()) {
+		return " (stream)";
+	}
+	return "";
+}
+
+operation EModelElement getDoc() : String {
+	var doc = self.getAnnotationValue("doc", "d").trim();
+	if (doc.isDefined() and not doc.endsWith(".")) {
+		doc = doc + ".";
+	}
+	return doc;
+}
+
+operation ETypedElement getType() : String {
+	if (self.eType.isDefined()) {
+		var type = self.eType.name;
+		if (type == "EString") type = "String";
+		else if (type == "EInt") type = "int";
+		else if (type == "EBoolean") type = "boolean";
+		else if (type == "ELong") type = "long";
+		else if (type == "EJavaObject") type = "Object";
+		if (self.isMany()) {
+			type = type + "[]";
+		}
+		return "\\camelcase{" + type + "}";
+	}
+	else return "void";
+}
+
+operation EClassifier getEntityType() {
+  if (self.isException()) {
+    return "Exception";
+  } else {
+    return "Entity";
+  }
+}
+
+operation EClassifier usedIn() {
+	return EOperation.all.select(op|op.eType = self or op.eParameters.exists(p|p.eType == self) or op.eExceptions.contains(self)).
+			collect(op|op.eContainer.name + "." + op.name).
+			includingAll(EClass.all.select(c|c.eStructuralFeatures.exists(sf|sf.eType = self)).collect(c|c.name));
+}
+
+operation EModelElement isExcluded() {
+	return self.getAnnotationValue("doc", "exclude") == "true";
+}
+
+operation EClassifier isException() {
+    return EOperation.all.exists(op|op.eExceptions.contains(self)) or self.getAnnotationValue("doc", "exception") == "true";
+}
+
+operation EOperation isStream() {
+	return self.getAnnotationValue("doc", "stream") == "true";
+}
+
+operation EModelElement getAnnotationValue(name : String, detail : String) : Any {
+	var ann := self.eAnnotations.selectOne(a|a.source = name);
+	var det;
+	
+	if (ann.isDefined()) {
+		det := ann.details.selectOne(d|d.key = detail);
+	}
+	
+	if (det.isDefined()) {
+		return det.value;
+	}
+	else {
+		return "";
+	}
+	return det;	
+}
+
+operation String escapeLaTeX() {
+  return self.replaceAll("_", "\\\\_");
+}
+
+operation EClassifier getUsedIn() : String {
+  var usedIn = self.usedIn();
+  if (usedIn.size() > 0) {
+    var columns = 3;
+    if (self.isKindOf(EEnum)) {
+      columns = 2;
+    }
+	%]\multicolumn{[%=columns%]}{|p{.95\linewidth}|}{\textbf{Used in:} [%=usedIn.concat(", ")%]} \\\hline[%
+  }
+}
+
+$pre self.eAllStructuralFeatures.contains(sf)
+operation EClassifier getInherited(sf: EStructuralFeature) : String {
+  if (self.eStructuralFeatures.contains(sf)) {
+    return "";
+  } else {
+    return " (\\nohyphens{inherited})";
+  }
+}
+
+/*
+ * Generates LaTeX code for an entity or an exception.
+ */
+operation describeEntity(c: EClass) {
+  out.println(c.getDoc());
+  out.println();
+
+  if (c.eAllSuperTypes.size() > 0) {
+    out.print("\\emph{Inherits from}: " + c.eAllSuperTypes.collect(t|t.name).concat(", ") + ".\n\n");
+  }
+
+  var subtypes = EClass.all.select(k|k.eSuperTypes.contains(c));
+  if (subtypes.size() > 0) {
+    out.print("\\emph{Inherited by}: " + subtypes.collect(t|t.name).concat(", ") + ".\n\n");
+  }
+%]
+\begin{longtable} {|p{4cm}|p{4cm}|p{7.25cm}|}
+	\caption{[%=c.getEntityType() + ' ' + c.name%]}
+	\label{tab:[%=c.name.ftlc()%]}\\
+	\hline%
+	\textbf{Field} & \textbf{Type} & \textbf{Documentation} \\\hline
+	[%
+	  if (c.eAllStructuralFeatures.size() > 0) {
+	    for (sf in c.eAllStructuralFeatures.sortBy(f|f.name)) { %]
+		  [%=sf.name.escapeLaTeX() + c.getInherited(sf) %] & [%=sf.getType() + sf.getOptional()%] & [%=sf.getDoc()%] \\\hline
+	 [% }
+	  } else { %]
+	    --- & --- & --- \\\hline
+   [% } %]
+   [%=c.getUsedIn()%]
+\end{longtable}
+[%  
+}
+%]
