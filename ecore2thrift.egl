@@ -18,10 +18,11 @@ service [%=c.name%] {
   )
   [%
   if (op.eExceptions.size > 0) { %]
-  throws
+  throws (
 	[% for (e in op.eExceptions) { %]
 	[%=e.name%] /* [%=e.getDoc()%] */, 
-	[% } /* for (e...) */
+	[% } /* for (e...) */ %]
+	) [%
 	} /* if (op...) */
 } /* for (op...) */ %]
 }
