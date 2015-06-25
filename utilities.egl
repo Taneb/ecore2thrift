@@ -35,11 +35,10 @@ operation ETypedElement getType() : String {
 		else if (type == "EInt") type = "int";
 		else if (type == "EBoolean") type = "boolean";
 		else if (type == "ELong") type = "long";
-		else if (type == "EJavaObject") type = "Object";
 		if (self.isMany()) {
-			type = type + "[]";
+			type = "list<" + type + ">";
 		}
-		return "\\camelcase{" + type + "}";
+		return type;
 	}
 	else return "void";
 }
@@ -87,61 +86,12 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
 	return det;	
 }
 
-operation String escapeLaTeX() {
-  return self.replaceAll("_", "\\\\_");
-}
-
-operation EClassifier getUsedIn() : String {
-  var usedIn = self.usedIn();
-  if (usedIn.size() > 0) {
-    var columns = 3;
-    if (self.isKindOf(EEnum)) {
-      columns = 2;
-    }
-	%]\multicolumn{[%=columns%]}{|p{.95\linewidth}|}{\textbf{Used in:} [%=usedIn.concat(", ")%]} \\\hline[%
-  }
-}
-
-$pre self.eAllStructuralFeatures.contains(sf)
-operation EClassifier getInherited(sf: EStructuralFeature) : String {
-  if (self.eStructuralFeatures.contains(sf)) {
-    return "";
-  } else {
-    return " (\\nohyphens{inherited})";
-  }
-}
-
 /*
  * Generates LaTeX code for an entity or an exception.
  */
 operation describeEntity(c: EClass) {
-  out.println(c.getDoc());
-  out.println();
-
-  if (c.eAllSuperTypes.size() > 0) {
-    out.print("\\emph{Inherits from}: " + c.eAllSuperTypes.collect(t|t.name).concat(", ") + ".\n\n");
-  }
-
-  var subtypes = EClass.all.select(k|k.eSuperTypes.contains(c));
-  if (subtypes.size() > 0) {
-    out.print("\\emph{Inherited by}: " + subtypes.collect(t|t.name).concat(", ") + ".\n\n");
-  }
-%]
-\begin{longtable} {|p{4cm}|p{4cm}|p{7.25cm}|}
-	\caption{[%=c.getEntityType() + ' ' + c.name%]}
-	\label{tab:[%=c.name.ftlc()%]}\\
-	\hline%
-	\textbf{Field} & \textbf{Type} & \textbf{Documentation} \\\hline
-	[%
-	  if (c.eAllStructuralFeatures.size() > 0) {
-	    for (sf in c.eAllStructuralFeatures.sortBy(f|f.name)) { %]
-		  [%=sf.name.escapeLaTeX() + c.getInherited(sf) %] & [%=sf.getType() + sf.getOptional()%] & [%=sf.getDoc()%] \\\hline
-	 [% }
-	  } else { %]
-	    --- & --- & --- \\\hline
-   [% } %]
-   [%=c.getUsedIn()%]
-\end{longtable}
-[%  
+   for (sf in c.eAllStructuralFeatures.sortBy(f|f.name)) { %]
+	 /* [%=sf.getDoc()%] */ 1: [%=sf.getType() + sf.getOptional()%] [%=sf.name%],
+[% }
 }
 %]

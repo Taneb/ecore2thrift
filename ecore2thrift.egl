@@ -1,91 +1,60 @@
 [% import 'utilities.egl'; %]
+namespace java [%=EPackage.all.first.nsURI%]
 
-% WARNING: This is an auto-generated file. Do not modify manually.
-\makeatletter
-  \newcommand{\camelhyph}[1]{\@fterfirst\c@amelhyph#1\relax }
-  \def\@fterfirst #1#2{#2#1}
-  \def\c@amelhyph #1{%
-   \ifthenelse{\equal{#1}\relax}{}{%  Do nothing if the end has been reached
-     \ifnum`#1<91 \-#1\else#1\fi%     Check whether #1 is an uppercase letter,
-                                %     if so, print \-#1, otherwise #1
-    \expandafter\c@amelhyph%    %     insert \c@amelhyph again.
-}}
-\makeatother
+[% for (c in EClass.all.select(c|not c.eOperations.isEmpty())) { %]
 
-\newcommand{\camelcase}[1]{\camelhyph{#1}\xspace}
+/* [%=c.getDoc()%] */
+service [%=c.name%] {
 
-\subsection{Services}
-\label{sec:services}
-
-[%=EPackage.all.first.getAnnotationValue("doc", "dServices")%]
-
-[%for (c in EClass.all.select(c|not c.eOperations.isEmpty())) { %]
-\subsubsection{[%=c.name%]}
-\label{sec:[%=c.name%]}
-[%=c.getDoc()%]
-
-[%for (op in c.eOperations) { %]
-\begin{longtable} {|p{2cm}|p{3.5cm}|p{2.5cm}|p{6.5cm}|}
-	\caption{Operation [%=c.name%].[%=op.name%]}
-	\label{tab:[%=c.name.ftlc()%]-[%=op.name%]}\\
-	\hline%
-	Auth: [%=op.getAuth()%] & \textbf{Name} & \textbf{Type} & \textbf{Documentation} \\\hline 
-	\textbf{Operation} & \camelcase{[%=op.name%]} & [%=op.getType()%] [%=op.getStream()%] & [%=op.getDoc()%] \\\hline
-	\textbf{Parameter}s & & & \\\hline
-	[%for (p in op.eParameters) { %]
-	 & [%=p.name.escapeLaTeX()%] [%=p.getOptional()%]& [%=p.getType()%] & [%=p.getDoc()%] \\\hline 
-	[%}
-	if (op.eExceptions.size > 0) { %]
-	\textbf{Exception}s & & & \\\hline
+[% for (op in c.eOperations) { %]
+  /* [%= op.getDoc() %] Auth: [%=op.getAuth()%] */
+  [%= op.getType() + ' ' + op.name %](
+  [%
+  
+    1.to(op.eParameters.size()).collect(
+      i | '/*' + p.getDoc() + '*/ ' + i + ':' + 
+    )
+  
+   var iParameter = 1;
+  for (p in op.eParameters) { %]
+	 /* [%=p.getDoc()%] */ [%=iParameter%]: [%=p.getType()%] [%=p.getOptional()%] [%=p.name %], 
+  [%
+    iParameter = iParameter + 1;
+  }
+  if (op.eExceptions.size > 0) { %] throws
 	[% for (e in op.eExceptions) { %]
-	 & \camelcase{[%=e.name.escapeLaTeX()%]} & \multicolumn{2}{p{8.5cm}|}{[%=e.getDoc()%]} \\\hline 
-	[% }
-	} %]
-\end{longtable}
-[%}%]
+	 [%=e.name%] /* [%=e.getDoc()%] */, 
+	[% } /* for (e...) */
+	} /* if (op...) */
+ %]
+  )
+[%} /* for (op...) */ %]
+}
+[%} /* for (c in EClass) */ %]
 
-[%}%]
-
-\subsection{Entities}
-\label{sec:entities}
 [%for (c in EClass.all.select(c|c.eOperations.isEmpty() and not c.isExcluded() and not c.isException()).sortBy(c|c.name)) { %]
-\subsubsection{[%=c.name%]}
 
+struct [%=c.name %] {
 [% describeEntity(c); %]
-
+}
 [%} /* for (c in EClass... */ %]
 
 [% if (EEnum.all.size() > 0) { %]
 
-\subsection{Enumerations}
-\label{sec:enumerations}
 [% for (c in EEnum.all.select(c|not c.isExcluded()).sortBy(c|c.name)) { %]
-\subsubsection{[%=c.name%]}
-
-\begin{longtable} {|p{4cm}|p{10.5cm}|}
-	\caption{Enumeration [%=c.name%]}
-	\label{tab:[%=c.name.ftlc()%]}\\
-	\hline%
-	\textbf{Name} & \textbf{Documentation} \\\hline 
+enum [%=c.name%] {
 	[% for (l in c.eLiterals.sortBy(l|l.name)) { %]
-		[%=l.name.escapeLaTeX()%] & [%=l.getDoc()%] \\\hline 
+		/* [%=l.getDoc()%] */ [%=l.name%] 
 	[% } %]
-	[%=c.getUsedIn()%]
-\end{longtable}
-
+}
 [% } /* for (c in EClass... */
 } /* if (EEnum... */
 
 var exceptions = EClass.all.select(c|c.eOperations.isEmpty() and not c.isExcluded() and c.isException()).sortBy(c|c.name);
-if (exceptions.size() > 0) {
-%]
-\subsection{Exceptions}
-\label{sec:exceptions}
-[% for (c in exceptions) { %]
-\subsubsection{[%=c.name%]}
-[% describeEntity(c); %]
-[% } /* for */
-} /* if (exceptions ... */
 
-
+for (c in exceptions) {
+  out.println("\nexception " + c.name + " {");
+  describeEntity(c);
+  out.println("}");
+}
 %]
