@@ -1,9 +1,22 @@
 [%
+
+operation Sequence zip(other : Sequence) : Sequence {
+	var result = new Sequence();
+	for(i in 0.to(self.size().min(other.size())-1)) {
+		result.add(Sequence{self.at(i), other.at(i)});
+	}
+	return result;
+}
+
+operation Sequence enumerate() : Sequence {
+	return self.zip(1.to(self.size()));
+}
+
 operation EModelElement getOptional() : String {
 	if (self.getAnnotationValue("doc", "optional") == "true") {
-		return " (optional)";
+		return "optional";
 	}
-	return "";
+	return "required";
 }
 
 operation EOperation getAuth() : String {
@@ -31,10 +44,12 @@ operation EModelElement getDoc() : String {
 operation ETypedElement getType() : String {
 	if (self.eType.isDefined()) {
 		var type = self.eType.name;
-		if (type == "EString") type = "string";
-		else if (type == "EInt") type = "int32";
-		else if (type == "EBoolean") type = "bool";
-		else if (type == "ELong") type = "long64";
+		switch (type) {
+			case "EString" : type = "string";
+			case "EInt"    : type = "int32";
+			case "EBoolean": type = "bool";
+			case "ELong"   : type = "int64";
+		}	
 		if (self.isMany()) {
 			type = "list<" + type + ">";
 		}
@@ -91,7 +106,7 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
  */
 operation describeEntity(c: EClass) {
    for (sf in c.eAllStructuralFeatures.sortBy(f|f.name)) { %]
-	 /* [%=sf.getDoc()%] */ 1: [%=sf.getType() + sf.getOptional()%] [%=sf.name%],
+	 /* [%=sf.getDoc()%] */ 1: [%=sf.getOptional() %] [%=sf.getType()%] [%=sf.name%],
 [% }
 }
 %]

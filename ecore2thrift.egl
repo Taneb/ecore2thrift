@@ -2,32 +2,30 @@
 namespace java [%=EPackage.all.first.nsURI%]
 
 [% for (c in EClass.all.select(c|not c.eOperations.isEmpty())) { %]
-
 /* [%=c.getDoc()%] */
 service [%=c.name%] {
-
-[% for (op in c.eOperations) { %]
-  /* [%= op.getDoc() %] Auth: [%=op.getAuth()%] */
+  [% for (op in c.eOperations) { %]
+  /* [%= op.getDoc() %] Auth needed: [%=op.getAuth()%] */
   [%= op.getType() + ' ' + op.name %](
-    
-  [%
-    
-  
-   var iParameter = 1;
-  for (p in op.eParameters) { %]
-	 /* [%=p.getDoc()%] */ [%=iParameter%]: [%=p.getType()%] [%=p.getOptional()%] [%=p.name %], 
+  [%  
+    var iParameter = 1;
+    for (p in op.eParameters) { %]
+	/* [%=p.getDoc()%] */ [%=iParameter%]: [%=p.getOptional()%] [%=p.getType()%] [%=p.name %], 
   [%
     iParameter = iParameter + 1;
   }
-  if (op.eExceptions.size > 0) { %] throws
+  %]
+  )
+  [%
+  if (op.eExceptions.size > 0) { %]
+  throws
 	[% for (e in op.eExceptions) { %]
-	 [%=e.name%] /* [%=e.getDoc()%] */, 
+	[%=e.name%] /* [%=e.getDoc()%] */, 
 	[% } /* for (e...) */
 	} /* if (op...) */
- %]
-  )
-[%} /* for (op...) */ %]
+} /* for (op...) */ %]
 }
+
 [%} /* for (c in EClass) */ %]
 
 [%for (c in EClass.all.select(c|c.eOperations.isEmpty() and not c.isExcluded() and not c.isException()).sortBy(c|c.name)) { %]
@@ -55,4 +53,5 @@ for (c in exceptions) {
   describeEntity(c);
   out.println("}");
 }
+
 %]
