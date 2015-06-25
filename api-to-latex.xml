@@ -1,0 +1,26 @@
+<!--
+	To run this you'll need to install Epsilon (http://eclipse.org/epsilon/),
+	and to edit api.emf you will need Emfatic (see the Epsilon download page).
+
+	Make sure that in "Window > Preferences", the "Automatically create Ecore
+	files" option is enabled: that will ensure that api.ecore is automatically
+	updated every time api.emf is saved. Otherwise, you will need to right-click
+	api.emf and launch "Generate Ecore model" manually every time.
+
+	Then:
+	1. Right click on Package Explorer
+	2. Run as -> Ant Build ...
+	3. JRE -> Run in the same JRE as the workspace
+-->
+<project default="main">
+	<target name="main">
+		<epsilon.emf.loadModel name="M" 
+			modelfile="api.ecore" 
+			metamodeluri="http://www.eclipse.org/emf/2002/Ecore"
+			read="true" store="false"/>
+		
+		<epsilon.egl src="api-to-latex.egl" target="api.tex">
+			<model ref="M"/>
+		</epsilon.egl>
+	</target>
+</project>
