@@ -9,11 +9,9 @@ service [%=c.name%] {
 [% for (op in c.eOperations) { %]
   /* [%= op.getDoc() %] Auth: [%=op.getAuth()%] */
   [%= op.getType() + ' ' + op.name %](
+    
   [%
-  
-    1.to(op.eParameters.size()).collect(
-      i | '/*' + p.getDoc() + '*/ ' + i + ':' + 
-    )
+    
   
    var iParameter = 1;
   for (p in op.eParameters) { %]

@@ -31,10 +31,10 @@ operation EModelElement getDoc() : String {
 operation ETypedElement getType() : String {
 	if (self.eType.isDefined()) {
 		var type = self.eType.name;
-		if (type == "EString") type = "String";
-		else if (type == "EInt") type = "int";
-		else if (type == "EBoolean") type = "boolean";
-		else if (type == "ELong") type = "long";
+		if (type == "EString") type = "string";
+		else if (type == "EInt") type = "int32";
+		else if (type == "EBoolean") type = "bool";
+		else if (type == "ELong") type = "long64";
 		if (self.isMany()) {
 			type = "list<" + type + ">";
 		}
