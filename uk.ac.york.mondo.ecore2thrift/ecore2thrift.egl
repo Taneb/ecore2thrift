@@ -19,9 +19,13 @@ service [%=c.name%] {
   [%
   if (op.eExceptions.size > 0) { %]
   throws (
-	[% for (e in op.eExceptions) { %]
-	[%=e.name%] /* [%=e.getDoc()%] */, 
-	[% } /* for (e...) */ %]
+	[%
+	iParameter = 1; 
+	for (e in op.eExceptions) { %]
+	[%=iParameter%]: [%=e.name%] err[%=iParameter%] /* [%=e.getDoc()%] */ 
+	[%
+	iParameter = iParameter + 1; 
+	} /* for (e...) */ %]
 	) [%
 	} /* if (op...) */
 } /* for (op...) */ %]

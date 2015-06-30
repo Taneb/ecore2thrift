@@ -1,17 +1,5 @@
 [%
 
-operation Sequence zip(other : Sequence) : Sequence {
-	var result = new Sequence();
-	for(i in 0.to(self.size().min(other.size())-1)) {
-		result.add(Sequence{self.at(i), other.at(i)});
-	}
-	return result;
-}
-
-operation Sequence enumerate() : Sequence {
-	return self.zip(1.to(self.size()));
-}
-
 operation EModelElement getOptional() : String {
 	if (self.getAnnotationValue("doc", "optional") == "true") {
 		return "optional";
