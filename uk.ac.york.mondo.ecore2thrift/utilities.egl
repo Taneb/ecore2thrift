@@ -93,8 +93,10 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
  * Generates LaTeX code for an entity or an exception.
  */
 operation describeEntity(c: EClass) {
+   var iParameter = 1;
    for (sf in c.eAllStructuralFeatures.sortBy(f|f.name)) { %]
-	 /* [%=sf.getDoc()%] */ 1: [%=sf.getOptional() %] [%=sf.getType()%] [%=sf.name%],
-[% }
+	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional() %] [%=sf.getType()%] [%=sf.name%],
+[% iParameter = iParameter + 1;
+   }
 }
 %]
