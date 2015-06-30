@@ -30,7 +30,7 @@ operation EModelElement getDoc() : String {
 }
 
 operation EModelElement getNum() : Integer {
-	var num = self.getAnnotationValue("number", "n");
+	var num = self.getAnnotationValue("thrift", "n");
 	if (num.isDefined and num.isInteger()) {
 		return num.asInteger();
 	}
