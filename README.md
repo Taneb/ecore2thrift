@@ -9,3 +9,6 @@ It is written in EGL from the [Epsilon](http://www.eclipse.org/epsilon/) project
   are not reserved words in the language you are using Thrift to generate.
   
   This includes, for example, "list" and "delete".
+
+## Other info
+If you need to change the number of a numbered element, add a `@number(n=<num>)` annotation in the .emf file, for example `@number(n="3")`

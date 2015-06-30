@@ -29,6 +29,16 @@ operation EModelElement getDoc() : String {
 	return doc;
 }
 
+operation EModelElement getNum() : Integer {
+	var num = self.getAnnotationValue("number", "n");
+	if (num.isDefined and num.isInteger()) {
+		return num.asInteger();
+	}
+	else {
+		return 0;
+	}
+}
+
 operation ETypedElement getType() : String {
 	if (self.eType.isDefined()) {
 		var type = self.eType.name;
@@ -107,8 +117,12 @@ operation EClass computeDepth() : Integer {
  * Generates LaTeX code for an entity or an exception.
  */
 operation describeEntity(c: EClass) {
-   var iParameter = 1;
-   for (sf in c.eAllStructuralFeatures.sortBy(f|f.name)) { %]
+	var iParameter = 1;
+	for (sf in c.eAllStructuralFeatures) { 
+		if (sf.getNum() > iParameter) {
+			iParameter = sf.getNum();
+		}
+   %]
 	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional() %] [%=sf.getType()%] [%=sf.name%],
 [% iParameter = iParameter + 1;
    }

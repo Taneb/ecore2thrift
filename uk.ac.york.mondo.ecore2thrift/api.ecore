@@ -1029,6 +1029,9 @@
       <eAnnotations source="doc">
         <details key="d" value="Whether the user has admin rights (i.e. so that they can create new users, change the status of admin users etc)"/>
       </eAnnotations>
+      <eAnnotations source="number">
+        <details key="n" value="3"/>
+      </eAnnotations>
     </eStructuralFeatures>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="File">

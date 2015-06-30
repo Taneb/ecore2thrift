@@ -38,7 +38,11 @@ service [%=c.name%] {
   [%= op.getType() + ' ' + op.name %](
   [%  
     var iParameter = 1;
-    for (p in op.eParameters) { %]
+    for (p in op.eParameters) { 
+    	if (p.getNum() > iParameter) {
+    		iParameter = p.getNum();
+    	}
+    	%]
 	/* [%=p.getDoc()%] */ [%=iParameter%]: [%=p.getOptional()%] [%=p.getType()%] [%=p.name %], 
   [%
     iParameter = iParameter + 1;
@@ -50,7 +54,10 @@ service [%=c.name%] {
   throws (
 	[%
 	iParameter = 1; 
-	for (e in op.eExceptions) { %]
+	for (e in op.eExceptions) { 
+		if (e.getNum() > iParameter) {
+			iParameter = e.getNum();
+		}%]
 	[%=iParameter%]: [%=e.name%] err[%=iParameter%] /* [%=e.getDoc()%] */ 
 	[%
 	iParameter = iParameter + 1; 
