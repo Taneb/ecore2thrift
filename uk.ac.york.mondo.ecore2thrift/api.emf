@@ -47,7 +47,7 @@ class Users {
 	) throws UserNotFound;
 
 	@doc(d="Deletes a platform user")
-	op void delete (
+	op void deleteUser (
 		@doc(d="The name of the user to delete") String username
 	) throws UserNotFound;
 }
@@ -63,11 +63,11 @@ class Hawk {
 	);
 
 	@doc(d="Lists the details of all Hawk instances")
-	op HawkInstance[*] list (
+	op HawkInstance[*] listHawkInstances (
 	);
 	
 	@doc(d="Deletes an existing Hawk instance")
-	op void delete (
+	op void deleteHawkInstance (
 		@doc(d="The name of the Hawk instance to delete") String name
 	) throws HawkInstanceNotFound;
 	

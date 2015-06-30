@@ -59,7 +59,7 @@
         </eAnnotations>
       </eParameters>
     </eOperations>
-    <eOperations name="delete" eExceptions="#//UserNotFound">
+    <eOperations name="deleteUser" eExceptions="#//UserNotFound">
       <eAnnotations source="doc">
         <details key="d" value="Deletes a platform user"/>
       </eAnnotations>
@@ -84,12 +84,12 @@
         </eAnnotations>
       </eParameters>
     </eOperations>
-    <eOperations name="list" upperBound="-1" eType="#//HawkInstance">
+    <eOperations name="listHawkInstances" upperBound="-1" eType="#//HawkInstance">
       <eAnnotations source="doc">
         <details key="d" value="Lists the details of all Hawk instances"/>
       </eAnnotations>
     </eOperations>
-    <eOperations name="delete" eExceptions="#//HawkInstanceNotFound">
+    <eOperations name="deleteHawkInstance" eExceptions="#//HawkInstanceNotFound">
       <eAnnotations source="doc">
         <details key="d" value="Deletes an existing Hawk instance"/>
       </eAnnotations>
