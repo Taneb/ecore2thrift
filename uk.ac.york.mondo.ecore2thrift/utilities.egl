@@ -34,6 +34,7 @@ operation ETypedElement getType() : String {
 		var type = self.eType.name;
 		switch (type) {
 			case "EString" : type = "string";
+			case "EJavaObject": type = "string"; // TODO: throw warning!
 			case "EInt"    : type = "i32";
 			case "EBoolean": type = "bool";
 			case "ELong"   : type = "i64";
@@ -87,6 +88,18 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
 		return "";
 	}
 	return det;	
+}
+
+operation EClass computeDepth() : Integer {
+	var curDeepestChild = -1;
+	for (sf in self.eAllStructuralFeatures.collect(c | c.getEType).collect(c : EClass | c)) {
+		var childDepth = sf.computeDepth();
+		if (childDepth > curDeepestChild) {
+			curDeepestChild = childDepth;
+		} 
+	}
+	
+	return curDeepestChild + 1;
 }
 
 /*
