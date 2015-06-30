@@ -90,6 +90,7 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
 	return det;	
 }
 
+@cached
 operation EClass computeDepth() : Integer {
 	var curDeepestChild = -1;
 	for (sf in self.eAllStructuralFeatures.collect(c | c.getEType).collect(c : EClass | c)) {
