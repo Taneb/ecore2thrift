@@ -34,9 +34,9 @@ operation ETypedElement getType() : String {
 		var type = self.eType.name;
 		switch (type) {
 			case "EString" : type = "string";
-			case "EInt"    : type = "int32";
+			case "EInt"    : type = "i32";
 			case "EBoolean": type = "bool";
-			case "ELong"   : type = "int64";
+			case "ELong"   : type = "i64";
 		}	
 		if (self.isMany()) {
 			type = "list<" + type + ">";

@@ -33,7 +33,7 @@ service [%=c.name%] {
 
 [%} /* for (c in EClass) */ %]
 
-[%for (c in EClass.all.select(c|c.eOperations.isEmpty() and not c.isExcluded() and not c.isException()).sortBy(c|c.name)) { %]
+[%for (c in EClass.all.select(c|c.eOperations.isEmpty() and not c.isException()).sortBy(c|c.name)) { %]
 
 struct [%=c.name %] {
 [% describeEntity(c); %]
