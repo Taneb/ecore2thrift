@@ -20,17 +20,28 @@ import org.eclipse.epsilon.egl.status.StatusMessage;
 import org.eclipse.epsilon.emc.emf.EmfModel;
 import org.eclipse.epsilon.eol.IEolExecutableModule;
 import org.eclipse.epsilon.eol.exceptions.models.EolModelLoadingException;
-import org.eclipse.epsilon.eol.models.ModelRepository;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 	private static final String ECORE_URI = "http://www.eclipse.org/emf/2002/Ecore";
+	
+	private void addModelToFactoryFromFile(EglFileGeneratingTemplateFactory factory, File file) throws EolModelLoadingException{
+		final IEolExecutableModule eglModule = new EglTemplateFactoryModuleAdapter(factory);
+		final EmfModel model = new EmfModel();
+		model.setModelFile(file.getAbsolutePath());
+		model.setName(file.getName());
+		model.setMetamodelUri(ECORE_URI);
+		model.load();
+		eglModule.getContext().getModelRepository().addModel(model);
+	}
+	
+	private void useTemplateToGenerateThriftFileWithFilenameBasedOnOriginFile(EglFileGeneratingTemplate template, File origin) throws IOException, EglRuntimeException {
+		final File of = new File(origin.toString().substring(0, origin.toString().lastIndexOf('.')) + ".thift");
+		of.createNewFile(); // if we have to overwrite, just go for it
+		template.generate("file://" + of.toString());
+	}
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -40,52 +51,39 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 			final IFile ecore = (IFile)selection.getFirstElement();
 			final File ecoreFile = ecore.getLocation().toFile();
 			final EglFileGeneratingTemplateFactory factory = new EglFileGeneratingTemplateFactory();
-	 		final IEolExecutableModule eglModule = new EglTemplateFactoryModuleAdapter(factory);
-			final ModelRepository modelRepo = eglModule.getContext().getModelRepository();
-			final EmfModel model = new EmfModel();
-			model.setModelFile(ecoreFile.getAbsolutePath());
-			model.setName(ecoreFile.getName());
-			model.setMetamodelUri(ECORE_URI);
 			try {
-				model.load();
+				addModelToFactoryFromFile(factory, ecoreFile);
 			} catch (EolModelLoadingException e) {
 				e.printStackTrace();
 				return null;
 			}
-			modelRepo.addModel(model);
 			try {
-				final URI ecore2thriftURI = GenerateThriftCommand.class.getResource("/egl/ecore2thrift.egl").toURI();
+				final URI ecore2thriftURI = GenerateThriftCommand.class.getResource("/egl/ecore2thrift.egl").toURI(); // should I bother giving this a name?
 				final EglFileGeneratingTemplate template = (EglFileGeneratingTemplate)factory.load(ecore2thriftURI);
 				template.process();
 				for (StatusMessage message : factory.getContext().getStatusMessages())
 					System.out.println(message);
-				final File of = new File(ecoreFile.toString().substring(0, ecoreFile.toString().lastIndexOf('.')) + ".thrift");
-				if (!of.createNewFile()) {
-					// ask if the user wants to overwrite!
-					final Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
-					// if they say no, just return.
-					if(!MessageDialog.open(MessageDialog.QUESTION, shell, "ecore2thrift", "Outpt file " + of.getName() + " already exists!\nDo you want to overwrite it?", SWT.NONE))
-						return null;
-				}
-				template.generate("file://" + of.toString());
-				ecore.getProject().refreshLocal(IProject.DEPTH_INFINITE, null);
+				useTemplateToGenerateThriftFileWithFilenameBasedOnOriginFile(template, ecoreFile);
 			} catch (EglRuntimeException e) {
-				// TODO Auto-generated catch block
+				// This is the exception to watch out for, I think
+				// It should be raised on a malformed ecore file
 				e.printStackTrace();
 			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
+				// Something has gone wrong with the ecore2thrift.egl file
+				// I would be VERY surprised were this to happen
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				// This will be raised if something goes horribly wrong when creating the file.
 				e.printStackTrace();
+			} 
+			try {
+				ecore.getProject().refreshLocal(IProject.DEPTH_INFINITE, null);
 			} catch (CoreException e) {
-				// TODO Auto-generated catch block
+				// Not sure when this would be raised.
+				// Something to do with situations when you can't refresh?
 				e.printStackTrace();
 			}
-			
 		}
-
-		// TODO Auto-generated method stub"
 		return null;
 	}
 
