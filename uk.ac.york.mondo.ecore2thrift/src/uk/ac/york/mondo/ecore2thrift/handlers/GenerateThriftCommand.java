@@ -38,14 +38,15 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 		eglModule.getContext().getModelRepository().addModel(model);
 	}
 	
-	private void useTemplateToGenerateThriftFileWithFilenameBasedOnOriginFile(EglFileGeneratingTemplate template, File origin) throws IOException, EglRuntimeException {
-		final File of = new File(origin.toString().substring(0, origin.toString().lastIndexOf('.')) + ".thift");
+	private void generateThriftFile(EglFileGeneratingTemplate template, File origin) throws IOException, EglRuntimeException {
+		final File of = new File(origin.toString().substring(0, origin.toString().lastIndexOf('.')) + ".thrift");
 		of.createNewFile(); // if we have to overwrite, just go for it
 		template.generate("file://" + of.toString());
 	}
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		
 		final ISelection selection0 = HandlerUtil.getCurrentSelectionChecked(event);
 		if (selection0 instanceof IStructuredSelection) {
 			final IStructuredSelection selection = (IStructuredSelection)selection0; 
@@ -64,7 +65,7 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 				template.process();
 				for (StatusMessage message : factory.getContext().getStatusMessages())
 					System.out.println(message);
-				useTemplateToGenerateThriftFileWithFilenameBasedOnOriginFile(template, ecoreFile);
+				generateThriftFile(template, ecoreFile);
 			} catch (Exception e) {
 				Activator.getPlugin().logError("There was some error while processing the model", e);
 				return null;
