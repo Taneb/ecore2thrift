@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import uk.ac.york.mondo.ecore2thrift.Activator;
+
 public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 	private static final String ECORE_URI = "http://www.eclipse.org/emf/2002/Ecore";
 	
@@ -53,8 +55,8 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 			final EglFileGeneratingTemplateFactory factory = new EglFileGeneratingTemplateFactory();
 			try {
 				addModelToFactoryFromFile(factory, ecoreFile);
-			} catch (EolModelLoadingException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+				Activator.getPlugin().logError("There was an error while loading the model", e);
 				return null;
 			}
 			try {
@@ -64,24 +66,17 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 				for (StatusMessage message : factory.getContext().getStatusMessages())
 					System.out.println(message);
 				useTemplateToGenerateThriftFileWithFilenameBasedOnOriginFile(template, ecoreFile);
-			} catch (EglRuntimeException e) {
-				// This is the exception to watch out for, I think
-				// It should be raised on a malformed ecore file
-				e.printStackTrace();
-			} catch (URISyntaxException e) {
-				// Something has gone wrong with the ecore2thrift.egl file
-				// I would be VERY surprised were this to happen
-				e.printStackTrace();
-			} catch (IOException e) {
-				// This will be raised if something goes horribly wrong when creating the file.
-				e.printStackTrace();
-			} 
+			} catch (Exception e) {
+				Activator.getPlugin().logError("There was some error while processing the model", e);
+				return null;
+			}
 			try {
 				ecore.getProject().refreshLocal(IProject.DEPTH_INFINITE, null);
 			} catch (CoreException e) {
 				// Not sure when this would be raised.
 				// Something to do with situations when you can't refresh?
-				e.printStackTrace();
+				Activator.getPlugin().logError("There was an error while refreshing the project", e);
+				return null;
 			}
 		}
 		return null;
