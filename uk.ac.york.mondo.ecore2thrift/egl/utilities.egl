@@ -43,12 +43,17 @@ operation ETypedElement getType() : String {
 	if (self.eType.isDefined()) {
 		var type = self.eType.name;
 		switch (type) {
-			case "EString" : type = "string";
-			case "EJavaObject": type = "string"; // TODO: throw warning!
+			case "EByte"      : type = "byte";
+			case "EByteArray" : type = "binary";
+			case "EBoolean"   : type = "bool";
+			case "EChar"   : type = "byte";
+			case "EFloat"  : type = "float";
 			case "EInt"    : type = "i32";
-			case "EBoolean": type = "bool";
 			case "ELong"   : type = "i64";
-		}	
+			case "EJavaObject" : type = "string"; // TODO: throw error from EVL!
+			case "EShort"  : type = "i16";
+			case "EString" : type = "string";
+		}
 		if (self.isMany()) {
 			type = "list<" + type + ">";
 		}
