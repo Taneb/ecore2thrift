@@ -1,12 +1,15 @@
 import 'utilities.eol';
-context EClass {
+
+context ENamedElement {
 	constraint NotReservedWord {
 		check {
 			return not self.name.isThriftReservedWord();
 		}
 		message : self.name + " is a reserved word! Please call it something different!"
 	}
-	
+}
+
+context EClass {
 	constraint OperationsOrFields {
 		check {
 			return self.eOperations.isEmpty() or self.eAttributes.isEmpty();
@@ -27,7 +30,6 @@ context EClass {
 		}
 		message : "@thrift(n=...) annotations must have an integer value!"
 	}
-
 }
 
 context EClass {
