@@ -60,7 +60,7 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 				return null;
 			}
 			try {
-				final URI ecore2thriftURI = GenerateThriftCommand.class.getResource("/egl/ecore2thrift.egl").toURI(); // should I bother giving this a name?
+				final URI ecore2thriftURI = GenerateThriftCommand.class.getResource("/epsilon/ecore2thrift.egl").toURI(); // should I bother giving this a name?
 				final EglFileGeneratingTemplate template = (EglFileGeneratingTemplate)factory.load(ecore2thriftURI);
 				template.process();
 				for (StatusMessage message : factory.getContext().getStatusMessages())
