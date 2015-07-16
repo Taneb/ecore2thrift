@@ -34,7 +34,7 @@ context EClass {
 
 context EClass {
 	// is a service
-	guard : self.eAttributes.isEmpty()
+	guard : self.eAttributes.isEmpty() and not self.eOperations.isEmpty()
 
 }
 

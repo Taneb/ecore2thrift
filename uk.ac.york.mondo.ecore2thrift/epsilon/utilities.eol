@@ -21,8 +21,6 @@ operation String isThriftReservedWord() : Boolean {
 	return thriftReservedWords.includes(self);
 }
 
-
-
 operation EClass hasOperations() : Boolean {
 	return self.EOperation.all.size() <> 0;
 }  
