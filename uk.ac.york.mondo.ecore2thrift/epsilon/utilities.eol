@@ -37,3 +37,11 @@ operation EStructuralFeature isNumberAnnotationValid() : Boolean {
 	var annotation = self.eAnnotations.select(annotation | annotation.source = "thrift" and annotation.containsKey("n"));
 	return annotation.size = 1 and annotation.first.get("n").isInteger() and annotation.first.get("n").asInteger() >= 0;
 }
+
+operation EClass isUsedAsException() : Boolean {
+	return EOperation.all.exists(op | op.eExceptions.includes(self));
+}
+
+operation EClass isUsedAsStruct() : Boolean {
+	return EOperation.all.exists(op | op.eParameters.exists(param | param.eType = self));
+}

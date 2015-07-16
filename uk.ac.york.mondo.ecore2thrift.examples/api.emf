@@ -343,7 +343,7 @@ class CollaborationSvnResourceReference extends CollaborationResourceReference {
 @doc(d="Contents of a resource in the collaboration API")
 class CollaborationResource {
     @doc(d="File with the contents of the resource")
-	ref File file;
+	val File file;
 }
 
 @doc(d="Credentials of the client in the target VCS")

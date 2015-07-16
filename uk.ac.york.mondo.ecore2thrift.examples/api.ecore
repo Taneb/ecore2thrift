@@ -733,7 +733,7 @@
     <eAnnotations source="doc">
       <details key="d" value="Contents of a resource in the collaboration API"/>
     </eAnnotations>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="file" eType="#//File">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="file" eType="#//File" containment="true">
       <eAnnotations source="doc">
         <details key="d" value="File with the contents of the resource"/>
       </eAnnotations>
@@ -1028,9 +1028,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="admin" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
       <eAnnotations source="doc">
         <details key="d" value="Whether the user has admin rights (i.e. so that they can create new users, change the status of admin users etc)"/>
-      </eAnnotations>
-      <eAnnotations source="number">
-        <details key="n" value="3"/>
       </eAnnotations>
     </eStructuralFeatures>
   </eClassifiers>

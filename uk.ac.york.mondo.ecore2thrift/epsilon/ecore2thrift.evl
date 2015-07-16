@@ -14,8 +14,17 @@ context EClass {
 		check {
 			return self.eOperations.isEmpty() or self.eAttributes.isEmpty();
 		}
-		message : "You must have either no operations or no fields!"
+		message : "You must have either no operations or no fields in " + self.name
 	}
+	/*
+	constraint NoReferences {
+		check {
+			// lists are kind of references too
+			return self.eReferences.forAll(ref | ref.isMany());
+		}
+		message : "There must not be any references in " + self.name
+	}
+	*/
 }
 
 context EClass {
@@ -29,6 +38,13 @@ context EClass {
 			return self.eOperations.forAll(annotation | annotation.hasNumberAnnotation() implies annotation.isNumberAnnotationValid());
 		}
 		message : "@thrift(n=...) annotations must have an integer value!"
+	}
+	
+	constraint EitherExceptionOrStruct {
+		check {
+			return not (self.isUsedAsException() and self.isUsedAsStruct());
+		}
+		message : self.name + " is used as both an exception and a struct!"
 	}
 }
 
