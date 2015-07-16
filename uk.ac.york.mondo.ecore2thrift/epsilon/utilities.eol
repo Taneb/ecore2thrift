@@ -1,0 +1,41 @@
+operation String isThriftReservedWord() : Boolean {
+	var thriftReservedWords = 
+		Set{"namespace", "cpp_namespace", "cpp_include",  "cpp_type",
+		"java_package", "cocoa_prefix", "php_namespace", "py_module", 
+		"perl_package", "ruby_namespace", "smalltalk_category", 
+		"smalltalk_prefix", "xsd_all", "xsd_optional", "xsd_nillable",
+		"xsd_namespace", "xsd_attrs", "include", "void", "bool", "byte", "i16",
+		"i32", "i64", "double", "string", "binary", "slist", "senum", "map",
+		"list", "set", "async", "typedef", "struct", "exception", "extends", 
+		"throws", "service", "enum", "const", "required", "optional", "abstract",
+		"and", "args", "as", "assert", "break", "case", "class", "continue",
+		"declare", "def", "default", "del", "delete", "do", "elif", "else", 
+		"elseif", "except", "exec", "false", "final", "finally", "float", "for",
+		"foreach", "function", "global", "goto", "if", "implements", "import",
+		"in", "inline", "instanceof", "interface", "is", "lambda", "native", "new",
+		"not", "or", "pass", "public", "print", "private", "protected", "raise",
+		"return", "sizeof", "static", "switch", "synchronized", "this", "throw",
+		"transient", "true", "try", "unsigned", "var", "virtual", "volatile",
+		"while", "with", "union", "yield"};
+
+	return thriftReservedWords.includes(self);
+}
+
+
+
+operation EClass hasOperations() : Boolean {
+	return self.EOperation.all.size() <> 0;
+}  
+
+operation EClass hasFields() : Boolean {
+	return self.EAttribute.all.size() <> 0;
+}
+
+operation EStructuralFeature hasNumberAnnotation() : Boolean {
+	return self.eAnnotations.select(annotation | annotation.source = "thrift").exists(thrift | thrift.containsKey("n"));
+}
+
+operation EStructuralFeature isNumberAnnotationValid() : Boolean {
+	var annotation = self.eAnnotations.select(annotation | annotation.source = "thrift" and annotation.containsKey("n"));
+	return annotation.size = 1 and annotation.first.get("n").isInteger() and annotation.first.get("n").asInteger() >= 0;
+}

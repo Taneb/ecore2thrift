@@ -1,0 +1,46 @@
+import 'utilities.eol';
+context EClass {
+	constraint NotReservedWord {
+		check {
+			return not self.name.isThriftReservedWord();
+		}
+		message : self.name + " is a reserved word! Please call it something different!"
+	}
+	
+	constraint OperationsOrFields {
+		check {
+			return self.eOperations.isEmpty() or self.eAttributes.isEmpty();
+		}
+		message : "You must have either no operations or no fields!"
+	}
+}
+
+context EClass {
+	// No operations, ie., is a struct or exception
+	guard : self.eOperations.isEmpty()
+
+	constraint ValidEnumeration {
+		check {
+			// the number annotation is valid when it exists
+			// TODO: check that they are unique! (including the ones without explicit numbers)
+			return self.eOperations.forAll(annotation | annotation.hasNumberAnnotation() implies annotation.isNumberAnnotationValid());
+		}
+		message : "@thrift(n=...) annotations must have an integer value!"
+	}
+
+}
+
+context EClass {
+	// is a service
+	guard : self.eAttributes.isEmpty()
+
+}
+
+context EOperation {
+	constraint NoNumbering {
+		check {
+			return not self.hasNumberAnnotation();
+		}
+		message : "An operation should not have a @thrift(n=...) annotation!"
+	}
+}
