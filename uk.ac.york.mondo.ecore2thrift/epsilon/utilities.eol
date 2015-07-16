@@ -38,6 +38,19 @@ operation EStructuralFeature isNumberAnnotationValid() : Boolean {
 	return annotation.size = 1 and annotation.first.get("n").isInteger() and annotation.first.get("n").asInteger() >= 0;
 }
 
+operation Collection numberAnnotationsUnique() : Boolean {
+	var ns = new Set();
+	for (annotatable in self) {
+		if (annotatable.hasNumberAnnotation()) {
+			var n = annotatable.eAnnotations.selectOne(annotation | annotation.source = "thrift" and annotation.containsKey("n")).get("n");
+			if (not ns.add(n)) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 operation EClass isUsedAsException() : Boolean {
 	return EOperation.all.exists(op | op.eExceptions.includes(self));
 }

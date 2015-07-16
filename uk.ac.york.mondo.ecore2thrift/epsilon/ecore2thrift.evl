@@ -61,4 +61,11 @@ context EOperation {
 		}
 		message : "An operation should not have a @thrift(n=...) annotation!"
 	}
+	
+	constraint ParameterNumbering {
+		check {
+			return self.eParameters.numberAnnotationsUnique();
+		}
+		message : "All parameters should have unique numbers"
+	}
 }
