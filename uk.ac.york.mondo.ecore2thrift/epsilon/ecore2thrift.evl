@@ -35,7 +35,7 @@ context EClass {
 		check {
 			// the number annotation is valid when it exists
 			// TODO: check that they are unique! (including the ones without explicit numbers)
-			return self.eOperations.forAll(annotation | annotation.hasNumberAnnotation() implies annotation.isNumberAnnotationValid());
+			return self.eStructuralFeatures.forAll(annotation | annotation.hasNumberAnnotation() implies annotation.isNumberAnnotationValid());
 		}
 		message : "@thrift(n=...) annotations must have an integer value!"
 	}
@@ -64,7 +64,13 @@ context EClass {
 context EClass {
 	// is a service
 	guard : self.eAttributes.isEmpty() and not self.eOperations.isEmpty()
-
+	
+	constraint NoNumber {
+		check {
+			return not self.hasNumberAnnotation();
+		}
+		message : self.name + " must not have a @thrift(n=...) annotation!"
+	}
 }
 
 context EOperation {
@@ -72,7 +78,7 @@ context EOperation {
 		check {
 			return not self.hasNumberAnnotation();
 		}
-		message : "An operation should not have a @thrift(n=...) annotation!"
+		message : "An operation should not have a @thrift(n=...) annotation!\n" + "In " + self.name
 	}
 	
 	constraint ParameterNumbering {
