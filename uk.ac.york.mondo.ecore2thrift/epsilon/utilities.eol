@@ -56,5 +56,6 @@ operation EClass isUsedAsException() : Boolean {
 }
 
 operation EClass isUsedAsStruct() : Boolean {
-	return EOperation.all.exists(op | op.eParameters.exists(param | param.eType = self));
+	return ETypedElement.all.exists(op | op.eType = self);
 }
+

@@ -52,6 +52,13 @@ context EClass {
 		}
 		message : self.name + " is used as both an exception and a struct!"
 	}
+	
+	critique UsedAsExceptionOrStruct {
+		check {
+			return self.isUsedAsException() or self.isUsedAsStruct();
+		}
+		message : self.name + " is not used!"
+	} 
 }
 
 context EClass {
