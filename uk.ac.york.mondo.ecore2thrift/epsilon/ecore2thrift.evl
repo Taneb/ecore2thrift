@@ -40,6 +40,12 @@ context EClass {
 		message : "@thrift(n=...) annotations must have an integer value!"
 	}
 	
+	constraint FieldNumbering {
+		check {
+			return self.eAttributes.numberAnnotationsUnique();
+		}
+	}
+	
 	constraint EitherExceptionOrStruct {
 		check {
 			return not (self.isUsedAsException() and self.isUsedAsStruct());
@@ -66,6 +72,13 @@ context EOperation {
 		check {
 			return self.eParameters.numberAnnotationsUnique();
 		}
-		message : "All parameters should have unique numbers"
+		message : "All parameters should have unique numbers in " + self.name
+	}
+	
+	constraint ExceptionNumbering {
+		check {
+			return self.eExceptions.numberAnnotationsUnique();
+		}
+		message : "All exceptions should have unique numbers in " + self.name
 	}
 }

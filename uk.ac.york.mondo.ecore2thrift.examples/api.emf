@@ -478,7 +478,7 @@ class DerivedAttributeSpec {
 class TransformationStatus {
 	@doc(d="True if the transformation has finished, false otherwise")	
 	attr boolean finished;
-	@doc(d="Time passed since the start of execution")	
+	@doc(d="Time passed since the start of execution")
 	attr long elapsed;
 	@doc(d="Description of the error that caused the transformation to fail")
 	attr String error;

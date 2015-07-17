@@ -30,19 +30,19 @@ operation EClass hasFields() : Boolean {
 }
 
 operation EModelElement hasNumberAnnotation() : Boolean {
-	return self.eAnnotations.select(annotation | annotation.source = "thrift").exists(thrift | thrift.containsKey("n"));
+	return self.eAnnotations.select(annotation | annotation.source = "thrift").exists(thrift | thrift.details.containsKey("n"));
 }
 
 operation EStructuralFeature isNumberAnnotationValid() : Boolean {
-	var annotation = self.eAnnotations.select(annotation | annotation.source = "thrift" and annotation.containsKey("n"));
-	return annotation.size = 1 and annotation.first.get("n").isInteger() and annotation.first.get("n").asInteger() >= 0;
+	var annotation = self.eAnnotations.select(annotation | annotation.source = "thrift" and annotation.details.containsKey("n"));
+	return annotation.size = 1 and annotation.first.details.get("n").isInteger() and annotation.first.details.get("n").asInteger() >= 0;
 }
 
 operation Collection numberAnnotationsUnique() : Boolean {
 	var ns = new Set();
 	for (annotatable in self) {
 		if (annotatable.hasNumberAnnotation()) {
-			var n = annotatable.eAnnotations.selectOne(annotation | annotation.source = "thrift" and annotation.containsKey("n")).get("n");
+			var n = annotatable.eAnnotations.selectOne(annotation | annotation.source = "thrift" and annotation.details.containsKey("n")).details.get("n");
 			if (not ns.add(n)) {
 				return false;
 			}
