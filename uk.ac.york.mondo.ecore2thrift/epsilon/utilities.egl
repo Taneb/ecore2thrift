@@ -48,7 +48,9 @@ operation ETypedElement getType() : String {
 			case "EBoolean"   : type = "bool";
 			// Java characters are UTF-16 internally, cannot be represented all the time by a single byte
 			case "EChar"   : type = "string";
-			case "EFloat"  : type = "float";
+			// TODO: we should warn users that floats need to be turned into doubles (floats are not supported by Thrift)
+			case "EDouble"  : type = "double";
+			case "EFloat"  : type = "double";
 			case "EInt"    : type = "i32";
 			case "ELong"   : type = "i64";
 			case "EJavaObject" : type = "string"; // TODO: throw error from EVL!

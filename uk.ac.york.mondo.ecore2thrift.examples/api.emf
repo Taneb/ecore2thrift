@@ -440,7 +440,6 @@ class ScalarOrReference {
 	attr short vShort;
 	attr int vInteger;
 	attr long vLong;
-	attr float vFloat;
 	attr double vDouble;
 	attr String vString;
 	attr String vReference;
