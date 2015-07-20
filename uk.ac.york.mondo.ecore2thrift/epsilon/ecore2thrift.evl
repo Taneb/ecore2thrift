@@ -9,6 +9,15 @@ context ENamedElement {
 	}
 }
 
+context EPackage {
+	constraint NoNumbering {
+		check {
+			return not self.hasNumberAnnotation();
+		}
+		message : "The package must not have a @thrift(n=...) annotation!"
+	}
+}
+
 context EClass {
 	constraint OperationsOrFields {
 		check {
