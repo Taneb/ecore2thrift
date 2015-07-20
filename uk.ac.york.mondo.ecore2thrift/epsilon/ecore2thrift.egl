@@ -1,7 +1,5 @@
 [% import 'utilities.egl'; %]
-namespace java [%=EPackage.all.first.nsURI%]
-
-[% if (EEnum.all.size() > 0) { %]
+namespace java [%=EPackage.all.first.getJavaNamespace()%]
 
 [% for (c in EEnum.all.select(c|not c.isExcluded()).sortBy(c|c.name)) { %]
 enum [%=c.name%] {
@@ -11,24 +9,15 @@ enum [%=c.name%] {
 }
 
 [% } /* for (c in EClass... */ %]
-[%for (c in EClass.all.select(c|c.eOperations.isEmpty() and not c.isException()).sortBy(c|c.name).sortBy(c| c.computeDepth())) { %]
-struct [%=c.name %] {
+
+[% for (c in EClass.all.select(c|c.eOperations.isEmpty()).sortBy(c|c.name).sortBy(c| c.computeDepth())) { %]
+[%=c.getEntityThriftKeyword()%] [%=c.name %] {
 [% describeEntity(c); %]
 }
 
-[%} /* for (c in EClass... */ %]
-[%
-} /* if (EEnum... */
+[%} /* for (c in EClass... */
 
-var exceptions = EClass.all.select(c|c.eOperations.isEmpty() and not c.isExcluded() and c.isException()).sortBy(c|c.name);
-for (c in exceptions) {
-  out.println("\nexception " + c.name + " {");
-  describeEntity(c);
-  out.println("}");
-}
-%]
-
-[% for (c in EClass.all.select(c|not c.eOperations.isEmpty())) { %]
+for (c in EClass.all.select(c|not c.eOperations.isEmpty())) { %]
 /* [%=c.getDoc()%] */
 service [%=c.name%] {
   [% for (op in c.eOperations) { %]

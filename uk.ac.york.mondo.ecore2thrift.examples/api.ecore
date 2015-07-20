@@ -4,6 +4,9 @@
   <eAnnotations source="doc">
     <details key="dServices" value="&#xA;The present section lists the services offered by the current version of the&#xA;MONDO platform. For each service, the available operations are presented, along&#xA;with the parameters they take, their return type and the exceptions they may&#xA;throw if they fail.&#xA;&#xA;In addition to their explicitly listed exceptions, operations requiring authentication&#xA;may throw an AuthenticationFailed exception if the user fails to provide valid credentials&#xA;or does not have the required permissions. In its current version, the MONDO platform&#xA;assumes that authenticated users will have the necessary permissions. The deliverable D6.3&#xA;in M24 will include a more fine-grained permissions system which separates authentication and&#xA;authorization.&#xA;"/>
   </eAnnotations>
+  <eAnnotations source="thrift">
+    <details key="javans" value="uk.york.ac.mondo_api"/>
+  </eAnnotations>
   <eClassifiers xsi:type="ecore:EClass" name="Users">
     <eAnnotations source="doc">
       <details key="d" value="The majority of service operations provided by the MONDO&#xA;&#x9;&#x9;platform require user authentication (indicated in the top-left  &#xA;&#x9;&#x9;cell of each operation table) to prevent unaccountable use. &#xA;&#x9;&#x9;As such, the platform needs to provide basic user management service operations &#xA;&#x9;&#x9;for creating, updating and deleting user accounts."/>
@@ -880,15 +883,30 @@
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
       <eAnnotations source="doc">
-        <details key="d" value="The name of the model element property the value of which is stored in this slot"/>
+        <details key="d" value="The name of the model element property whose value is stored in this slot"/>
       </eAnnotations>
     </eStructuralFeatures>
     <eStructuralFeatures xsi:type="ecore:EReference" name="values" upperBound="-1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject">
+        eType="#//ScalarOrReference" containment="true">
       <eAnnotations source="doc">
-        <details key="d" value="The values of the slot. These can be primitive values (for attributes) or model elements (for references)"/>
+        <details key="d" value="A heterogeneous list with the values for the slot. These can be primitive values (for attributes) or model elements (for references)"/>
       </eAnnotations>
     </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ScalarOrReference">
+    <eAnnotations source="thrift">
+      <details key="union" value="true"/>
+    </eAnnotations>
+    <eAnnotations source="doc">
+      <details key="d" value="Union type for a scalar value or a reference to a model element"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vByte" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EByte"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vShort" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EShort"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vInteger" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vLong" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vDouble" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vString" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="vReference" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ModelSpec">
     <eAnnotations source="doc">

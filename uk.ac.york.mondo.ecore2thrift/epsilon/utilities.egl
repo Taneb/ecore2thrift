@@ -46,8 +46,11 @@ operation ETypedElement getType() : String {
 			case "EByte"      : type = "byte";
 			case "EByteArray" : type = "binary";
 			case "EBoolean"   : type = "bool";
-			case "EChar"   : type = "byte";
-			case "EFloat"  : type = "float";
+			// Java characters are UTF-16 internally, cannot be represented all the time by a single byte
+			case "EChar"   : type = "string";
+			// TODO: we should warn users that floats need to be turned into doubles (floats are not supported by Thrift)
+			case "EDouble"  : type = "double";
+			case "EFloat"  : type = "double";
 			case "EInt"    : type = "i32";
 			case "ELong"   : type = "i64";
 			case "EJavaObject" : type = "string"; // TODO: throw error from EVL!
@@ -65,8 +68,20 @@ operation ETypedElement getType() : String {
 operation EClassifier getEntityType() {
   if (self.isException()) {
     return "Exception";
+  } else if (self.isUnion()) {
+    return "Union";
   } else {
     return "Entity";
+  }
+}
+
+operation EClassifier getEntityThriftKeyword() {
+  if (self.isException()) {
+    return "exception";
+  } else if (self.isUnion()) {
+    return "union";
+  } else {
+    return "struct";
   }
 }
 
@@ -82,6 +97,10 @@ operation EModelElement isExcluded() {
 
 operation EClassifier isException() {
     return EOperation.all.exists(op|op.eExceptions.contains(self)) or self.getAnnotationValue("doc", "exception") == "true";
+}
+
+operation EClassifier isUnion() {
+    return self.getAnnotationValue("thrift", "union") == "true";
 }
 
 operation EOperation isStream() {
@@ -103,6 +122,15 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
 		return "";
 	}
 	return det;	
+}
+
+operation EPackage getJavaNamespace() : String {
+  var ann = self.getAnnotationValue("thrift", "javans");
+  if (ann.isDefined()) {
+    return ann;
+  } else {
+    return self.nsURI;
+  }
 }
 
 @cached
