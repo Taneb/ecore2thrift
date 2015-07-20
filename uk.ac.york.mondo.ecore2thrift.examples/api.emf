@@ -11,6 +11,7 @@ assumes that authenticated users will have the necessary permissions. The delive
 in M24 will include a more fine-grained permissions system which separates authentication and
 authorization.
 ")
+@thrift(javans="uk.york.ac.mondo_api")
 @namespace(uri="mondo_api", prefix="")
 package mondo_api;
 
@@ -426,10 +427,23 @@ class ModelElement {
 
 @doc(d="Represents a slot that can store the value(s) of a property of a model element") 
 class Slot {
-	@doc(d="The name of the model element property the value of which is stored in this slot") 
+	@doc(d="The name of the model element property whose value is stored in this slot")
 	attr String name;
-	@doc(d="The values of the slot. These can be primitive values (for attributes) or model elements (for references)") 
-	ref Object[*] values;
+	@doc(d="A heterogeneous list with the values for the slot. These can be primitive values (for attributes) or model elements (for references)") 
+	val ScalarOrReference[*] values;
+}
+
+@thrift(union="true")
+@doc(d="Union type for a scalar value or a reference to a model element")
+class ScalarOrReference {
+	attr byte vByte;
+	attr short vShort;
+	attr int vInteger;
+	attr long vLong;
+	attr float vFloat;
+	attr double vDouble;
+	attr String vString;
+	attr String vReference;
 }
 
 @doc(d="Captures information about source/target models of ATL transformations") 
