@@ -38,6 +38,24 @@ context EAnnotation {
 	}
 }
 
+context EAnnotation {
+	// @doc(auth...) annotations
+	guard : self.source = "doc" and self.details.containsKey("auth")
+	constraint IsOperation {
+		check {
+			return self.getEModelElement().eClass().name = "EOperation";
+		}
+		message : self.getEModelElement().name + " is not an operation and should not have a doc(auth=...) attribute!"
+	}
+	
+	constraint IsBoolean {
+		check {
+			return Set{"false","true"}.includes(self.details.get("auth"));
+		}
+		message : self.details.get("auth") + " is not a boolean value! In a @doc(auth=...) annotation in " + self.getEModelElement().name
+	}
+}
+
 context EClass {
 	constraint OperationsOrFields {
 		check {
@@ -103,13 +121,6 @@ context EClass {
 }
 
 context EOperation {
-	constraint NoNumbering {
-		check {
-			return not self.hasNumberAnnotation();
-		}
-		message : "An operation should not have a @thrift(n=...) annotation!\n" + "In " + self.name
-	}
-	
 	constraint ParameterNumbering {
 		check {
 			return self.eParameters.numberAnnotationsUnique();
