@@ -56,6 +56,17 @@ context EAnnotation {
 	}
 }
 
+context EAnnotation {
+	// Optional annotations
+	guard : self.source = "doc" and self.details.containsKey("optional")
+	constraint IsArgument {
+		check {
+			return Set{"EParameter", "EAttribute"}.includes(self.getEModelElement().eClass.name);
+		}
+		message : self.getEModelElement().name + " is not an argument and should not have a doc(optional=...) attribute!"
+	}
+}
+
 context EClass {
 	constraint OperationsOrFields {
 		check {
