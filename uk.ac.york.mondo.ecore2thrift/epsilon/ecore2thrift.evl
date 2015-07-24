@@ -65,6 +65,12 @@ context EAnnotation {
 		}
 		message : self.getEModelElement().name + " is not an argument and should not have a doc(optional=...) attribute!"
 	}
+	constraint IsBoolean {
+		check {
+			return Set{"false","true"}.includes(self.details.get("optional"));
+		}
+		message : self.details.get("optional") + " is not a boolean value! In @doc(optional=...) annotation in " + self.getEModelElement().name
+	}
 }
 
 context EClass {
