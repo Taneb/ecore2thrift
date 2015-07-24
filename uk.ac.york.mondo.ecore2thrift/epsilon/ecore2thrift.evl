@@ -1,5 +1,6 @@
 import 'utilities.eol';
 
+
 context ENamedElement {
 	constraint NotReservedWord {
 		check {
@@ -20,12 +21,20 @@ context EAnnotation {
 	}
 }
 
-context EPackage {
-	constraint NoNumbering {
+context EAnnotation {
+	// Java Namespace Annotation
+	guard : self.source = "thrift" and self.details.containsKey("javans")
+	constraint IsPackage {
 		check {
-			return not self.hasNumberAnnotation();
+			return self.getEModelElement().eClass().name = "EPackage";
 		}
-		message : "The package must not have a @thrift(n=...) annotation!"
+		message : self.getEModelElement().name + " is not a package and should not have a thrift(javans=...) annotation!"
+	}
+	constraint IsValidPackageName {
+		check {
+			return self.details.get("javans").isJavaPackageName();
+		}
+		message : self.details.get("javans") + " is not a valid Java Package name!"
 	}
 }
 

@@ -59,3 +59,23 @@ operation EClass isUsedAsStruct() : Boolean {
 	return ETypedElement.all.exists(op | op.eType = self);
 }
 
+operation String isJavaPackageName() : Boolean {
+	for (part : String in self.split("\\.")) {
+		var s = new Native("java.lang.String")(part);
+		if (s.length() = 0) {
+			return false;
+		}
+		var i = 0;
+		while (i < s.length()) {
+			var c = new Native("java.lang.Character")(s.charAt(i));
+			if (not (i = 0 implies c.isJavaIdentifierStart(c))) {
+				return false;
+			}
+			else if (not c.isJavaIdentifierPart(c)) {
+				return false;
+			}
+			i = i + 1;
+		}
+	}
+	return true;
+}
