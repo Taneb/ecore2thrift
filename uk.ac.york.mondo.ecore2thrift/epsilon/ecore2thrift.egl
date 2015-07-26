@@ -10,7 +10,7 @@ enum [%=c.name%] {
 
 [% } /* for (c in EClass... */ %]
 
-[% for (c in EClass.all.select(c|c.eOperations.isEmpty()).sortBy(c|c.name).sortBy(c| c.computeDepth())) { %]
+[% for (c in EClass.all.select(c|c.eOperations.isEmpty() and not c.isMap()).sortBy(c|c.name).sortBy(c| c.computeDepth())) { %]
 [%=c.getEntityThriftKeyword()%] [%=c.name %] {
 [% describeEntity(c); %]
 }
