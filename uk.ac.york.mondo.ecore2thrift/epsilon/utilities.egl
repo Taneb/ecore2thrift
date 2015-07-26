@@ -153,13 +153,20 @@ operation EPackage getJavaNamespace() : String {
 
 @cached
 operation EClass computeDepth() : Integer {
+	if (self.~depthVisiting.isDefined()) {
+	  -- Avoid cyclic references
+	  return -1;
+	}
+
 	var curDeepestChild = -1;
+	self.~depthVisiting = true;
 	for (sf in self.eAllStructuralFeatures.collect(c | c.getEType).collect(c : EClass | c)) {
 		var childDepth = sf.computeDepth();
 		if (childDepth > curDeepestChild) {
 			curDeepestChild = childDepth;
 		} 
 	}
+	delete self.~depthVisiting;
 	
 	return curDeepestChild + 1;
 }
