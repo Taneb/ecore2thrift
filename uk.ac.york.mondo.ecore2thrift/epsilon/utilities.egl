@@ -1,11 +1,16 @@
 [%
 import 'utilities.eol';
 
-operation EModelElement getOptional() : String {
+operation EModelElement getOptional(isUnion : Boolean) : String {
 	if (self.getAnnotationValue("doc", "optional") == "true") {
 		return "optional";
 	}
-	return "required";
+	if (isUnion) {
+		return "optional";
+	}
+	else {
+		return "required";
+	}
 }
 
 operation EOperation getAuth() : String {
@@ -121,7 +126,7 @@ operation describeEntity(c: EClass) {
 			iParameter = sf.getNum();
 		}
    %]
-	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional() %] [%=sf.getType()%] [%=sf.name%],
+	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional(c.isUnion()) %] [%=sf.getType()%] [%=sf.name%],
 [% iParameter = iParameter + 1;
    }
 }
