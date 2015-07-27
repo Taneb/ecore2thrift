@@ -878,6 +878,10 @@
     </eStructuralFeatures>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Slot">
+    <eAnnotations source="thrift.map">
+      <details key="key" value="name"/>
+      <details key="value" value="values"/>
+    </eAnnotations>
     <eAnnotations source="doc">
       <details key="d" value="Represents a slot that can store the value(s) of a property of a model element"/>
     </eAnnotations>
