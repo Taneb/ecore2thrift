@@ -21,6 +21,70 @@ operation String isThriftReservedWord() : Boolean {
 	return thriftReservedWords.includes(self);
 }
 
+operation EClassifier getMapKeyField() : EStructuralFeature {
+	var fldName = self.getAnnotationValue("thrift.map", "key");
+	return self.eAllStructuralFeatures.selectOne(f|f.name = fldName);
+}
+
+operation EClassifier getMapValueField() : EStructuralFeature {
+	var fldName = self.getAnnotationValue("thrift.map", "value");
+	return self.eAllStructuralFeatures.selectOne(f|f.name = fldName);
+}
+
+operation EModelElement getAnnotationValue(name : String, detail : String) : Any {
+	var ann := self.eAnnotations.selectOne(a|a.source = name);
+	var det;
+	
+	if (ann.isDefined()) {
+		det := ann.details.selectOne(d|d.key = detail);
+	}
+	
+	if (det.isDefined()) {
+		return det.value;
+	}
+	else {
+		return "";
+	}
+	return det;
+}
+
+operation EClassifier isMap() {
+	return self.getAnnotationValue("thrift.map", "key") <> "";
+}
+
+operation ETypedElement getType() : String {
+	if (self.eType.isDefined()) {
+		var eType = self.eType;
+		var type = eType.name;
+		if (eType.isMap()) {
+			return "map<" + eType.getMapKeyField().getType() + "," + eType.getMapValueField().getType() + ">";
+		}
+		switch (type) {
+			case "EByte"      : type = "byte";
+			case "EByteArray" : type = "binary";
+			case "EBoolean"   : type = "bool";
+			// Java characters are UTF-16 internally, cannot be represented all the time by a single byte
+			case "EChar"   : type = "string";
+			// TODO: we should warn users that floats need to be turned into doubles (floats are not supported by Thrift)
+			case "EDouble"  : type = "double";
+			case "EFloat"  : type = "double";
+			case "EInt"    : type = "i32";
+			case "ELong"   : type = "i64";
+			case "EShort"  : type = "i16";
+			case "EString" : type = "string";
+			default :
+				if (type.isKindOf(EDataType)) {
+					 return "unknown";
+					 }
+		}
+		if (self.isMany()) {
+			type = "list<" + type + ">";
+		}
+		return type;
+	}
+	else return "void";
+}
+
 operation EClass hasOperations() : Boolean {
 	return self.EOperation.all.size() <> 0;
 }  

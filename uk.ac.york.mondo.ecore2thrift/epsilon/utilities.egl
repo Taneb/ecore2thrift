@@ -1,4 +1,5 @@
 [%
+import 'utilities.eol';
 
 operation EModelElement getOptional() : String {
 	if (self.getAnnotationValue("doc", "optional") == "true") {
@@ -37,36 +38,6 @@ operation EModelElement getNum() : Integer {
 	else {
 		return 0;
 	}
-}
-
-operation ETypedElement getType() : String {
-	if (self.eType.isDefined()) {
-		var eType = self.eType;
-		var type = eType.name;
-		if (eType.isMap()) {
-			return "map<" + eType.getMapKeyField().getType() + "," + eType.getMapValueField().getType() + ">";
-		}
-		switch (type) {
-			case "EByte"      : type = "byte";
-			case "EByteArray" : type = "binary";
-			case "EBoolean"   : type = "bool";
-			// Java characters are UTF-16 internally, cannot be represented all the time by a single byte
-			case "EChar"   : type = "string";
-			// TODO: we should warn users that floats need to be turned into doubles (floats are not supported by Thrift)
-			case "EDouble"  : type = "double";
-			case "EFloat"  : type = "double";
-			case "EInt"    : type = "i32";
-			case "ELong"   : type = "i64";
-			case "EJavaObject" : type = "string"; // TODO: throw error from EVL!
-			case "EShort"  : type = "i16";
-			case "EString" : type = "string";
-		}
-		if (self.isMany()) {
-			type = "list<" + type + ">";
-		}
-		return type;
-	}
-	else return "void";
 }
 
 operation EClassifier getEntityType() {
@@ -111,37 +82,6 @@ operation EOperation isStream() {
 	return self.getAnnotationValue("doc", "stream") == "true";
 }
 
-operation EClassifier isMap() {
-	return self.getAnnotationValue("thrift.map", "key") <> "";
-}
-
-operation EClassifier getMapKeyField() : EStructuralFeature {
-	var fldName = self.getAnnotationValue("thrift.map", "key");
-	return self.eAllStructuralFeatures.selectOne(f|f.name = fldName);
-}
-
-operation EClassifier getMapValueField() : EStructuralFeature {
-	var fldName = self.getAnnotationValue("thrift.map", "value");
-	return self.eAllStructuralFeatures.selectOne(f|f.name = fldName);
-}
-
-operation EModelElement getAnnotationValue(name : String, detail : String) : Any {
-	var ann := self.eAnnotations.selectOne(a|a.source = name);
-	var det;
-	
-	if (ann.isDefined()) {
-		det := ann.details.selectOne(d|d.key = detail);
-	}
-	
-	if (det.isDefined()) {
-		return det.value;
-	}
-	else {
-		return "";
-	}
-	return det;
-}
-
 operation EPackage getJavaNamespace() : String {
   var ann = self.getAnnotationValue("thrift", "javans");
   if (ann.isDefined()) {
@@ -172,7 +112,7 @@ operation EClass computeDepth() : Integer {
 }
 
 /*
- * Generates LaTeX code for an entity or an exception.
+ * Generates Thrift code for an entity or an exception.
  */
 operation describeEntity(c: EClass) {
 	var iParameter = 1;

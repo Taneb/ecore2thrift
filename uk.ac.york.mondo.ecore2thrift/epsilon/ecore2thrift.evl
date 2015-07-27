@@ -1,6 +1,5 @@
 import 'utilities.eol';
 
-
 context ENamedElement {
 	constraint NotReservedWord {
 		check {
@@ -36,6 +35,16 @@ context EAnnotation {
 		}
 		message : self.details.get("javans") + " is not a valid Java Package name!"
 	}
+}
+
+context ETypedElement {
+	constraint IsValidThriftType {
+		check {
+			return self.getType() <> "unknown";
+		}
+		message : self.eType + " is not a valid type!"
+	}
+
 }
 
 context EAnnotation {
