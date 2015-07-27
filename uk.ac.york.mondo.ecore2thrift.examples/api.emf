@@ -425,6 +425,7 @@ class ModelElement {
 	val Slot[*] slots;
 }
 
+@thrift.map(key="name", value="values")
 @doc(d="Represents a slot that can store the value(s) of a property of a model element") 
 class Slot {
 	@doc(d="The name of the model element property whose value is stored in this slot")

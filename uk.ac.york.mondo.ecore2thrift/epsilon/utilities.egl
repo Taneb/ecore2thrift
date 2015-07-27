@@ -41,7 +41,11 @@ operation EModelElement getNum() : Integer {
 
 operation ETypedElement getType() : String {
 	if (self.eType.isDefined()) {
-		var type = self.eType.name;
+		var eType = self.eType;
+		var type = eType.name;
+		if (eType.isMap()) {
+			return "map<" + eType.getMapKeyField().getType() + "," + eType.getMapValueField().getType() + ">";
+		}
 		switch (type) {
 			case "EByte"      : type = "byte";
 			case "EByteArray" : type = "binary";
@@ -107,6 +111,20 @@ operation EOperation isStream() {
 	return self.getAnnotationValue("doc", "stream") == "true";
 }
 
+operation EClassifier isMap() {
+	return self.getAnnotationValue("thrift.map", "key") <> "";
+}
+
+operation EClassifier getMapKeyField() : EStructuralFeature {
+	var fldName = self.getAnnotationValue("thrift.map", "key");
+	return self.eAllStructuralFeatures.selectOne(f|f.name = fldName);
+}
+
+operation EClassifier getMapValueField() : EStructuralFeature {
+	var fldName = self.getAnnotationValue("thrift.map", "value");
+	return self.eAllStructuralFeatures.selectOne(f|f.name = fldName);
+}
+
 operation EModelElement getAnnotationValue(name : String, detail : String) : Any {
 	var ann := self.eAnnotations.selectOne(a|a.source = name);
 	var det;
@@ -121,7 +139,7 @@ operation EModelElement getAnnotationValue(name : String, detail : String) : Any
 	else {
 		return "";
 	}
-	return det;	
+	return det;
 }
 
 operation EPackage getJavaNamespace() : String {
@@ -135,13 +153,20 @@ operation EPackage getJavaNamespace() : String {
 
 @cached
 operation EClass computeDepth() : Integer {
+	if (self.~depthVisiting.isDefined()) {
+	  -- Avoid cyclic references
+	  return -1;
+	}
+
 	var curDeepestChild = -1;
+	self.~depthVisiting = true;
 	for (sf in self.eAllStructuralFeatures.collect(c | c.getEType).collect(c : EClass | c)) {
 		var childDepth = sf.computeDepth();
 		if (childDepth > curDeepestChild) {
 			curDeepestChild = childDepth;
 		} 
 	}
+	delete self.~depthVisiting;
 	
 	return curDeepestChild + 1;
 }
@@ -151,7 +176,7 @@ operation EClass computeDepth() : Integer {
  */
 operation describeEntity(c: EClass) {
 	var iParameter = 1;
-	for (sf in c.eAllStructuralFeatures) { 
+	for (sf in c.eAllStructuralFeatures) {
 		if (sf.getNum() > iParameter) {
 			iParameter = sf.getNum();
 		}
