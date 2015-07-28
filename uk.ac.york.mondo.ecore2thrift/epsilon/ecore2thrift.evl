@@ -37,6 +37,31 @@ context EAnnotation {
 	}
 }
 
+context EAnnotation {
+	// Map annotation
+	guard : self.source = "thrift.map"
+	constraint IsOnStruct {
+		check {
+			return true;
+		}
+		// sometimes it won't have a name- what should I do in that situation?
+		message : self.getEModelElement().name + " is not a struct and should not have a @thrift.map annotaion."
+	}
+	constraint KeyValid {
+		check {
+			return self.details.containsKey("key") and self.getEModelElement().eContents.exists(field : EStructuralFeature | field.name = self.details.get("key"));
+		}
+		message : "thrift.map annotation has no or an invalid key field in " + self.getEModelElement().name 
+	}
+	constraint ValueValid{
+		check {
+			return self.details.containsKey("value") and self.getEModelElement().eContents.exists(field : EStructuralFeature | field.name = self.details.get("value"));
+		}
+		message : "thrift.map annotation has no or an invalid value field in " + self.getEModelElement().name
+	} 
+
+}
+
 context ETypedElement {
 	constraint IsValidThriftType {
 		check {
