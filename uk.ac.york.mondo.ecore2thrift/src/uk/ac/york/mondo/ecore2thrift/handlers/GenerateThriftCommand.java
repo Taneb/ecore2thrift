@@ -41,7 +41,7 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 	private void generateThriftFile(EglFileGeneratingTemplate template, File origin) throws IOException, EglRuntimeException {
 		final File of = new File(origin.toString().substring(0, origin.toString().lastIndexOf('.')) + ".thrift");
 		of.createNewFile(); // if we have to overwrite, just go for it
-		template.generate("file://" + of.toString());
+		template.generate(of.toURI().toString());
 	}
 	
 	@Override
