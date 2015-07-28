@@ -42,10 +42,9 @@ context EAnnotation {
 	guard : self.source = "thrift.map"
 	constraint IsOnStruct {
 		check {
-			return true;
+			return self.getEModelElement().eClass().name = "EClass" and self.getEModelElement().eOperations.isEmpty();
 		}
-		// sometimes it won't have a name- what should I do in that situation?
-		message : self.getEModelElement().name + " is not a struct and should not have a @thrift.map annotaion."
+		message : self.getEModelElement().name.ifUndefined("Unnamed object") + " is not a struct and should not have a @thrift.map annotaion."
 	}
 	constraint KeyValid {
 		check {
