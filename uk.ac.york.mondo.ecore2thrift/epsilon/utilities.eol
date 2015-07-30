@@ -52,6 +52,10 @@ operation EClassifier isMap() {
 	return self.getAnnotationValue("thrift.map", "key") <> "";
 }
 
+operation EStructuralFeature isMerged() {
+	return self.hasAnnotation("thrift.merge");
+}
+
 operation ETypedElement getType() : String {
 	if (self.eType.isDefined()) {
 		var eType = self.eType;
@@ -91,6 +95,10 @@ operation EClass hasOperations() : Boolean {
 
 operation EClass hasFields() : Boolean {
 	return self.EAttribute.all.size() <> 0;
+}
+
+operation EModelElement hasAnnotation(name : String): Boolean {
+	return self.eAnnotations.exists(a | a.source = name);
 }
 
 operation EModelElement hasNumberAnnotation() : Boolean {
