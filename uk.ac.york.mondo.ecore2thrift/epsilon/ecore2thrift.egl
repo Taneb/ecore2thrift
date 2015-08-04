@@ -30,7 +30,7 @@ service [%=c.name%] {
     		iParameter = p.getNum();
     	}
     	%]
-	/* [%=p.getDoc()%] */ [%=iParameter%]: [%=p.getOptional(false)%] [%=p.getType()%] [%=p.name %], 
+	/* [%=p.getDoc()%] */ [%=iParameter%]: [%=p.getOptional(false)%] [%=p.getType()%] [%=p.name %][%=p.getDefault()%],
   [%
     iParameter = iParameter + 1;
   }

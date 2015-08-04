@@ -69,6 +69,15 @@ operation EClassifier getEntityThriftKeyword() {
   }
 }
 
+operation ETypedElement getDefault() {
+  var d = self.getAnnotationValue("doc", "default");
+  if (d.isDefined()) {
+    return " = " + d;
+  } else {
+    return "";
+  }
+}
+
 operation EClassifier usedIn() {
 	return EOperation.all.select(op|op.eType = self or op.eParameters.exists(p|p.eType == self) or op.eExceptions.contains(self)).
 			collect(op|op.eContainer.name + "." + op.name).
@@ -136,7 +145,7 @@ operation describeEntityFields(c: EClass, iParameter: Integer): Integer {
 			iParameter = describeEntityFields(sf.eType, iParameter);
 		} else {
    %]
-	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional(c.isUnion()) %] [%=sf.getType()%] [%=sf.name%],
+	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional(c.isUnion()) %] [%=sf.getType()%] [%=sf.name%][%=sf.getDefault()%],
 [% iParameter = iParameter + 1;
 		}
 	}
