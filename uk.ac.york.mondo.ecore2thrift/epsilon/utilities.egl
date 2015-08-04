@@ -3,6 +3,10 @@ import 'utilities.eol';
 
 operation EModelElement getOptional(isUnion : Boolean) : String {
 	if (self.getAnnotationValue("doc", "optional") == "true") {
+		if (self.isKindOf(EParameter)) {
+		  // optional is treated as default for parameters: avoid warning from Thrift
+		  return "";
+		}
 		return "optional";
 	}
 	if (isUnion) {
@@ -65,6 +69,15 @@ operation EClassifier getEntityThriftKeyword() {
   }
 }
 
+operation ETypedElement getDefault() {
+  var d = self.getAnnotationValue("doc", "default");
+  if (d.isDefined()) {
+    return " = " + d;
+  } else {
+    return "";
+  }
+}
+
 operation EClassifier usedIn() {
 	return EOperation.all.select(op|op.eType = self or op.eParameters.exists(p|p.eType == self) or op.eExceptions.contains(self)).
 			collect(op|op.eContainer.name + "." + op.name).
@@ -120,14 +133,22 @@ operation EClass computeDepth() : Integer {
  * Generates Thrift code for an entity or an exception.
  */
 operation describeEntity(c: EClass) {
-	var iParameter = 1;
+    describeEntityFields(c, 1);
+}
+
+operation describeEntityFields(c: EClass, iParameter: Integer): Integer {
 	for (sf in c.eAllStructuralFeatures) {
 		if (sf.getNum() > iParameter) {
 			iParameter = sf.getNum();
 		}
+		if (sf.isMerged()) {
+			iParameter = describeEntityFields(sf.eType, iParameter);
+		} else {
    %]
-	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional(c.isUnion()) %] [%=sf.getType()%] [%=sf.name%],
+	 /* [%=sf.getDoc()%] */ [%=iParameter%]: [%=sf.getOptional(c.isUnion()) %] [%=sf.getType()%] [%=sf.name%][%=sf.getDefault()%],
 [% iParameter = iParameter + 1;
-   }
+		}
+	}
+	return iParameter;
 }
 %]

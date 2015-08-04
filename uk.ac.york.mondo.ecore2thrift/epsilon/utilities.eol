@@ -52,6 +52,10 @@ operation EClassifier isMap() {
 	return self.getAnnotationValue("thrift.map", "key") <> "";
 }
 
+operation EStructuralFeature isMerged() {
+	return self.hasAnnotation("thrift.merge");
+}
+
 operation ETypedElement getType() : String {
 	if (self.eType.isDefined()) {
 		var eType = self.eType;
@@ -60,18 +64,26 @@ operation ETypedElement getType() : String {
 			return "map<" + eType.getMapKeyField().getType() + "," + eType.getMapValueField().getType() + ">";
 		}
 		switch (type) {
-			case "EByte"      : type = "byte";
-			case "EByteArray" : type = "binary";
-			case "EBoolean"   : type = "bool";
+			case "EByte"            : type = "byte";
+			case "EByteObject"      : type = "byte";
+			case "EByteArray"       : type = "binary";
+			case "EBooleanObject"   : type = "bool";
+			case "EBoolean"         : type = "bool";
 			// Java characters are UTF-16 internally, cannot be represented all the time by a single byte
-			case "EChar"   : type = "string";
+			case "EChar"            : type = "string";
+			case "ECharacterObject" : type = "string";
 			// TODO: we should warn users that floats need to be turned into doubles (floats are not supported by Thrift)
-			case "EDouble"  : type = "double";
-			case "EFloat"  : type = "double";
-			case "EInt"    : type = "i32";
-			case "ELong"   : type = "i64";
-			case "EShort"  : type = "i16";
-			case "EString" : type = "string";
+			case "EDouble"          : type = "double";
+			case "EDoubleObject"    : type = "double";
+			case "EFloat"           : type = "double";
+			case "EFloatObject"     : type = "double";
+			case "EInt"             : type = "i32";
+			case "EIntegerObject"   : type = "i32";
+			case "ELong"            : type = "i64";
+			case "ELongObject"      : type = "i64";
+			case "EShort"           : type = "i16";
+			case "EShortObject"     : type = "i16";
+			case "EString"          : type = "string";
 			default :
 				if (type.isKindOf(EDataType)) {
 					 return "unknown";
@@ -91,6 +103,10 @@ operation EClass hasOperations() : Boolean {
 
 operation EClass hasFields() : Boolean {
 	return self.EAttribute.all.size() <> 0;
+}
+
+operation EModelElement hasAnnotation(name : String): Boolean {
+	return self.eAnnotations.exists(a | a.source = name);
 }
 
 operation EModelElement hasNumberAnnotation() : Boolean {
