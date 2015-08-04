@@ -3,6 +3,10 @@ import 'utilities.eol';
 
 operation EModelElement getOptional(isUnion : Boolean) : String {
 	if (self.getAnnotationValue("doc", "optional") == "true") {
+		if (self.isKindOf(EParameter)) {
+		  // optional is treated as default for parameters: avoid warning from Thrift
+		  return "";
+		}
 		return "optional";
 	}
 	if (isUnion) {
