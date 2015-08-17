@@ -57,6 +57,8 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		Job job = new Job("ecore2thrift"){
 			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Generating Thrift file from Ecore", 3);
+				
 				final ISelection selection0 = HandlerUtil.getCurrentSelection(event);
 				if (selection0 instanceof IStructuredSelection) {
 					final IStructuredSelection selection = (IStructuredSelection)selection0; 
@@ -64,6 +66,7 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 					final File ecoreFile = ecore.getLocation().toFile();
 					// run EVL script
 					try {
+						monitor.subTask("Validating");
 						for (IMarker marker : ecore.findMarkers(EValidator.MARKER, false, IResource.DEPTH_INFINITE)) {
 							if (marker.getAttribute("secondary-marker-type", "").equalsIgnoreCase("uk.ac.york.mondo.ecore2thift.validation")) {
 								marker.delete();
@@ -95,15 +98,27 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 						Activator.getPlugin().logError("There was some error during validation.", e);
 						return new Status(Status.ERROR, "ecore2thrift", "There was some error during validation", e);
 					}
+					monitor.worked(1);
+					if (monitor.isCanceled()) {
+						monitor.done();
+						return Status.CANCEL_STATUS;						
+					}
 					final EglFileGeneratingTemplateFactory factory = new EglFileGeneratingTemplateFactory();
 					try {
+						monitor.subTask("Loading model");
 						final IEolExecutableModule eglModule = new EglTemplateFactoryModuleAdapter(factory);
 						addModelFromFile(eglModule, ecoreFile);
 					} catch (Exception e) {
 						Activator.getPlugin().logError("There was an error while loading the model", e);
 						return new Status(Status.ERROR, "ecore2thrift", "There was an error while loading the model", e);
 					}
+					monitor.worked(1);
+					if (monitor.isCanceled()) {
+						monitor.done();
+						return Status.CANCEL_STATUS;
+					}
 					try {
+						monitor.subTask("Processing model");
 						final URI ecore2thriftURI = GenerateThriftCommand.class.getResource("/epsilon/ecore2thrift.egl").toURI(); // should I bother giving this a name?
 						final EglFileGeneratingTemplate template = (EglFileGeneratingTemplate)factory.load(ecore2thriftURI);
 						template.process();
@@ -114,6 +129,12 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 						Activator.getPlugin().logError("There was some error while processing the model", e);
 						return new Status(Status.ERROR, "ecore2thrift", "There was some error while processing the model", e);
 					}
+					monitor.worked(1);
+					if (monitor.isCanceled()) {
+						monitor.done();
+						return Status.CANCEL_STATUS;
+					}
+					monitor.subTask("Refreshing project");
 					try {
 						ecore.getProject().refreshLocal(IProject.DEPTH_INFINITE, null);
 					} catch (CoreException e) {
@@ -122,6 +143,8 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 						Activator.getPlugin().logError("There was an error while refreshing the project", e);
 						return new Status(Status.ERROR, "ecore2thrift", "There was an error while refreshing the project", e);
 					}
+					monitor.done();
+					
 				}
 				return Status.OK_STATUS;
 			}
