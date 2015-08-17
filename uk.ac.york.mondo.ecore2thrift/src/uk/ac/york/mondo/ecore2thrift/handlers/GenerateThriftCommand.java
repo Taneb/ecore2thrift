@@ -14,6 +14,10 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplate;
 import org.eclipse.epsilon.egl.EglFileGeneratingTemplateFactory;
@@ -50,72 +54,81 @@ public class GenerateThriftCommand extends AbstractHandler implements IHandler {
 	}
 	
 	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final ISelection selection0 = HandlerUtil.getCurrentSelectionChecked(event);
-		if (selection0 instanceof IStructuredSelection) {
-			final IStructuredSelection selection = (IStructuredSelection)selection0; 
-			final IFile ecore = (IFile)selection.getFirstElement();
-			final File ecoreFile = ecore.getLocation().toFile();
-			// run EVL script
-			try {
-				for (IMarker marker : ecore.findMarkers(EValidator.MARKER, false, IResource.DEPTH_INFINITE)) {
-					if (marker.getAttribute("secondary-marker-type", "").equalsIgnoreCase("uk.ac.york.mondo.ecore2thift.validation")) {
-						marker.delete();
+	public Object execute(final ExecutionEvent event) throws ExecutionException {
+		Job job = new Job("ecore2thrift"){
+			protected IStatus run(IProgressMonitor monitor) {
+				final ISelection selection0 = HandlerUtil.getCurrentSelection(event);
+				if (selection0 instanceof IStructuredSelection) {
+					final IStructuredSelection selection = (IStructuredSelection)selection0; 
+					final IFile ecore = (IFile)selection.getFirstElement();
+					final File ecoreFile = ecore.getLocation().toFile();
+					// run EVL script
+					try {
+						for (IMarker marker : ecore.findMarkers(EValidator.MARKER, false, IResource.DEPTH_INFINITE)) {
+							if (marker.getAttribute("secondary-marker-type", "").equalsIgnoreCase("uk.ac.york.mondo.ecore2thift.validation")) {
+								marker.delete();
+							}
+						}
+						EvlModule validateModule = new EvlModule();
+						addModelFromFile(validateModule, ecoreFile);
+						validateModule.parse(GenerateThriftCommand.class.getResource("/epsilon/ecore2thrift.evl").toURI());
+						validateModule.execute();
+						
+						List<EvlUnsatisfiedConstraint> unsatisfiedConstraints = validateModule.getContext().getUnsatisfiedConstraints();
+						if (!unsatisfiedConstraints.isEmpty()) {
+							boolean shouldStop = false;
+							for (EvlUnsatisfiedConstraint unsatisfiedConstraint : unsatisfiedConstraints) {
+								IMarker marker = ecore.createMarker(EValidator.MARKER);
+								if (unsatisfiedConstraint.getConstraint().isCritique()) {
+									marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+								}
+								else {
+									marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+									shouldStop = true;
+								}
+								marker.setAttribute(IMarker.MESSAGE, unsatisfiedConstraint.getMessage());
+								marker.setAttribute("secondary-marker-type", "uk.ac.york.mondo.ecore2thift.validation");
+							}
+							if (shouldStop) return null; //TODO: show dialogue saying that there are problems					
+						}
+					} catch (Exception e) {
+						Activator.getPlugin().logError("There was some error during validation.", e);
+						return new Status(Status.ERROR, "ecore2thrift", "There was some error during validation", e);
+					}
+					final EglFileGeneratingTemplateFactory factory = new EglFileGeneratingTemplateFactory();
+					try {
+						final IEolExecutableModule eglModule = new EglTemplateFactoryModuleAdapter(factory);
+						addModelFromFile(eglModule, ecoreFile);
+					} catch (Exception e) {
+						Activator.getPlugin().logError("There was an error while loading the model", e);
+						return new Status(Status.ERROR, "ecore2thrift", "There was an error while loading the model", e);
+					}
+					try {
+						final URI ecore2thriftURI = GenerateThriftCommand.class.getResource("/epsilon/ecore2thrift.egl").toURI(); // should I bother giving this a name?
+						final EglFileGeneratingTemplate template = (EglFileGeneratingTemplate)factory.load(ecore2thriftURI);
+						template.process();
+						for (StatusMessage message : factory.getContext().getStatusMessages())
+							System.out.println(message);
+						generateThriftFile(template, ecoreFile);
+					} catch (Exception e) {
+						Activator.getPlugin().logError("There was some error while processing the model", e);
+						return new Status(Status.ERROR, "ecore2thrift", "There was some error while processing the model", e);
+					}
+					try {
+						ecore.getProject().refreshLocal(IProject.DEPTH_INFINITE, null);
+					} catch (CoreException e) {
+						// Not sure when this would be raised.
+						// Something to do with situations when you can't refresh?
+						Activator.getPlugin().logError("There was an error while refreshing the project", e);
+						return new Status(Status.ERROR, "ecore2thrift", "There was an error while refreshing the project", e);
 					}
 				}
-				EvlModule validateModule = new EvlModule();
-				addModelFromFile(validateModule, ecoreFile);
-				validateModule.parse(GenerateThriftCommand.class.getResource("/epsilon/ecore2thrift.evl").toURI());
-				validateModule.execute();
-				
-				List<EvlUnsatisfiedConstraint> unsatisfiedConstraints = validateModule.getContext().getUnsatisfiedConstraints();
-				if (!unsatisfiedConstraints.isEmpty()) {
-					boolean shouldStop = false;
-					for (EvlUnsatisfiedConstraint unsatisfiedConstraint : unsatisfiedConstraints) {
-						IMarker marker = ecore.createMarker(EValidator.MARKER);
-						if (unsatisfiedConstraint.getConstraint().isCritique()) {
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-						}
-						else {
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-							shouldStop = true;
-						}
-						marker.setAttribute(IMarker.MESSAGE, unsatisfiedConstraint.getMessage());
-						marker.setAttribute("secondary-marker-type", "uk.ac.york.mondo.ecore2thift.validation");
-					}
-					if (shouldStop) return null; //TODO: show dialogue saying that there are problems					
-				}
-			} catch (Exception e) {
-				// deal with exception
+				return Status.OK_STATUS;
 			}
-			final EglFileGeneratingTemplateFactory factory = new EglFileGeneratingTemplateFactory();
-			try {
-				final IEolExecutableModule eglModule = new EglTemplateFactoryModuleAdapter(factory);
-				addModelFromFile(eglModule, ecoreFile);
-			} catch (Exception e) {
-				Activator.getPlugin().logError("There was an error while loading the model", e);
-				return null;
-			}
-			try {
-				final URI ecore2thriftURI = GenerateThriftCommand.class.getResource("/epsilon/ecore2thrift.egl").toURI(); // should I bother giving this a name?
-				final EglFileGeneratingTemplate template = (EglFileGeneratingTemplate)factory.load(ecore2thriftURI);
-				template.process();
-				for (StatusMessage message : factory.getContext().getStatusMessages())
-					System.out.println(message);
-				generateThriftFile(template, ecoreFile);
-			} catch (Exception e) {
-				Activator.getPlugin().logError("There was some error while processing the model", e);
-				return null;
-			}
-			try {
-				ecore.getProject().refreshLocal(IProject.DEPTH_INFINITE, null);
-			} catch (CoreException e) {
-				// Not sure when this would be raised.
-				// Something to do with situations when you can't refresh?
-				Activator.getPlugin().logError("There was an error while refreshing the project", e);
-				return null;
-			}
-		}
+		};
+		job.setUser(true);
+		job.schedule();
+		
 		return null;
 	}
 
