@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/uk.ac.york.mondo.ecore2thrift.feature_1.0.0.201508251011.jar" id="uk.ac.york.mondo.ecore2thrift.feature" version="1.0.0.201508251011">
+      <category name="ecore2thrift"/>
+   </feature>
+   <category-def name="ecore2thrift" label="Ecore2Thrift"/>
+</site>
